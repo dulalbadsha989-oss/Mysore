@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Store</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f1f3f6;
+margin:0;
+}
+
+header{
+background:#2874f0;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.products{
+display:flex;
+flex-wrap:wrap;
+gap:20px;
+padding:20px;
+}
+
+.product{
+background:white;
+padding:10px;
+border-radius:10px;
+width:200px;
+text-align:center;
+}
+
+button{
+background:#fb641b;
+color:white;
+border:none;
+padding:10px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>My Online Store</h1>
+<button onclick="showCart()">Cart</button>
+</header>
+
+<div class="products" id="products"></div>
+
+<script>
+
+let products=[
+{ id:1, name:"T Shirt", price:499 },
+{ id:2, name:"Shoes", price:999 },
+{ id:3, name:"Watch", price:1500 }
+];
+
+let cart=[];
+
+function showProducts(){
+
+let html="";
+
+products.forEach(p=>{
+
+html+=`
+<div class="product">
+
+<h3>${p.name}</h3>
+
+<p>₹${p.price}</p>
+
+<button onclick="addCart(${p.id})">Add to Cart</button>
+
+</div>
+`;
+
+});
+
+document.getElementById("products").innerHTML=html;
+
+}
+
+function addCart(id){
+
+cart.push(id);
+
+alert("Added to cart");
+
+}
+
+function showCart(){
+
+let text="Cart Items\n";
+
+let total=0;
+
+cart.forEach(id=>{
+
+let p=products.find(x=>x.id==id);
+
+text+=p.name+" ₹"+p.price+"\n";
+
+total+=p.price;
+
+});
+
+text+="\nTotal ₹"+total;
+
+alert(text);
+
+}
+
+showProducts();
+
+</script>
+
+</body>
+</html>

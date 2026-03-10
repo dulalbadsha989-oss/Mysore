@@ -1,26 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>My Store</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#f1f3f6;
 margin:0;
+background:#f1f3f6;
 }
 
 header{
 background:#2874f0;
 color:white;
 padding:15px;
-text-align:center;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-.products{
+nav button{
+margin-left:5px;
+padding:8px 12px;
+border:none;
+background:white;
+color:#2874f0;
+cursor:pointer;
+}
+
+.banner{
+height:200px;
+background:url("https://images.unsplash.com/photo-1607083206968-13611e3d76db") center/cover;
+}
+
+.categories{
 display:flex;
-flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+padding:10px;
+background:white;
+}
+
+.categories button{
+padding:10px;
+border:none;
+background:#eee;
+cursor:pointer;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 gap:20px;
 padding:20px;
 }
@@ -28,17 +63,42 @@ padding:20px;
 .product{
 background:white;
 padding:10px;
-border-radius:10px;
-width:200px;
+border-radius:8px;
 text-align:center;
 }
 
-button{
+.product img{
+width:100%;
+height:150px;
+object-fit:cover;
+}
+
+.add{
 background:#fb641b;
 color:white;
 border:none;
 padding:10px;
 cursor:pointer;
+margin-top:5px;
+}
+
+.cart-item{
+background:white;
+margin:10px;
+padding:10px;
+}
+
+.admin{
+background:white;
+padding:20px;
+max-width:400px;
+margin:auto;
+}
+
+input{
+padding:8px;
+margin:5px;
+width:90%;
 }
 
 </style>
@@ -48,49 +108,93 @@ cursor:pointer;
 <body>
 
 <header>
-<h1>My Online Store</h1>
+
+<h2>My Store</h2>
+
+<nav>
+<button onclick="showHome()">Home</button>
 <button onclick="showCart()">Cart</button>
+<button onclick="showLogin()">Login</button>
+<button onclick="showAdmin()">Admin</button>
+</nav>
+
 </header>
 
-<div class="products" id="products"></div>
+<div class="banner"></div>
+
+<div class="categories">
+
+<button onclick="filterCategory('All')">All</button>
+<button onclick="filterCategory('Clothes')">Clothes</button>
+<button onclick="filterCategory('Shoes')">Shoes</button>
+<button onclick="filterCategory('Electronics')">Electronics</button>
+
+</div>
+
+<div id="main"></div>
 
 <script>
 
-let products=[
-{ id:1, name:"T Shirt", price:499 },
-{ id:2, name:"Shoes", price:999 },
-{ id:3, name:"Watch", price:1500 }
+let products = JSON.parse(localStorage.getItem("products")) || [
+
+{ id:1,name:"T Shirt",price:499,category:"Clothes",image:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"},
+{ id:2,name:"Running Shoes",price:999,category:"Shoes",image:"https://images.unsplash.com/photo-1542291026-7eec264c27ff"},
+{ id:3,name:"Smart Watch",price:1999,category:"Electronics",image:"https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b"}
+
 ];
 
-let cart=[];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let users = JSON.parse(localStorage.getItem("users")) || [];
 
-function showProducts(){
+function showHome(){
+displayProducts(products);
+}
 
-let html="";
+function displayProducts(list){
 
-products.forEach(p=>{
+let html="<div class='grid'>";
+
+list.forEach(p=>{
 
 html+=`
+
 <div class="product">
+
+<img src="${p.image}">
 
 <h3>${p.name}</h3>
 
 <p>₹${p.price}</p>
 
-<button onclick="addCart(${p.id})">Add to Cart</button>
+<button class="add" onclick="addCart(${p.id})">Add to Cart</button>
 
 </div>
+
 `;
 
 });
 
-document.getElementById("products").innerHTML=html;
+html+="</div>";
+
+document.getElementById("main").innerHTML=html;
+
+}
+
+function filterCategory(cat){
+
+if(cat==="All"){
+displayProducts(products);
+}else{
+let filtered=products.filter(p=>p.category===cat);
+displayProducts(filtered);
+}
 
 }
 
 function addCart(id){
 
 cart.push(id);
+localStorage.setItem("cart",JSON.stringify(cart));
 
 alert("Added to cart");
 
@@ -98,7 +202,7 @@ alert("Added to cart");
 
 function showCart(){
 
-let text="Cart Items\n";
+let html="<h2 style='padding:10px'>Cart</h2>";
 
 let total=0;
 
@@ -106,19 +210,181 @@ cart.forEach(id=>{
 
 let p=products.find(x=>x.id==id);
 
-text+=p.name+" ₹"+p.price+"\n";
+html+=`
+
+<div class="cart-item">
+
+${p.name} - ₹${p.price}
+
+</div>
+
+`;
 
 total+=p.price;
 
 });
 
-text+="\nTotal ₹"+total;
+html+=`<h3 style='padding:10px'>Total ₹${total}</h3>`;
 
-alert(text);
+html+=`<button onclick="checkout()" style="margin:10px">Checkout (COD)</button>`;
+
+document.getElementById("main").innerHTML=html;
 
 }
 
-showProducts();
+function checkout(){
+
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+orders.push(cart);
+
+localStorage.setItem("orders",JSON.stringify(orders));
+
+cart=[];
+localStorage.removeItem("cart");
+
+document.getElementById("main").innerHTML="
+
+<h2 style='padding:20px'>Order Placed</h2>
+
+<p style='padding:20px'>Payment Method: Cash on Delivery</p>
+
+";
+
+}
+
+function showLogin(){
+
+document.getElementById("main").innerHTML=`
+
+<h2>Customer Login</h2>
+
+<input id="email" placeholder="Email">
+
+<input id="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<button onclick="signup()">Signup</button>
+
+`;
+
+}
+
+function signup(){
+
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
+
+users.push({email,password});
+
+localStorage.setItem("users",JSON.stringify(users));
+
+alert("Account created");
+
+}
+
+function login(){
+
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
+
+let user=users.find(u=>u.email===email && u.password===password);
+
+if(user){
+alert("Login successful");
+showHome();
+}else{
+alert("Invalid login");
+}
+
+}
+
+function showAdmin(){
+
+let pass=prompt("Enter Admin Password");
+
+if(pass!=="hydra9002"){
+alert("Access denied");
+return;
+}
+
+document.getElementById("main").innerHTML=`
+
+<div class="admin">
+
+<h2>Admin Panel</h2>
+
+<input id="name" placeholder="Product Name">
+
+<input id="price" placeholder="Price">
+
+<input id="category" placeholder="Category">
+
+<input id="image" placeholder="Image URL">
+
+<button onclick="addProduct()">Add Product</button>
+
+<button onclick="showOrdersAdmin()">View Orders</button>
+
+</div>
+
+`;
+
+}
+
+function addProduct(){
+
+let name=document.getElementById("name").value;
+let price=document.getElementById("price").value;
+let category=document.getElementById("category").value;
+let image=document.getElementById("image").value;
+
+let newProduct={
+
+id:Date.now(),
+name,
+price,
+category,
+image
+
+};
+
+products.push(newProduct);
+
+localStorage.setItem("products",JSON.stringify(products));
+
+alert("Product Added");
+
+showHome();
+
+}
+
+function showOrdersAdmin(){
+
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+let html="<h2>All Orders</h2>";
+
+orders.forEach((order,i)=>{
+
+html+=`<h3>Order ${i+1}</h3>`;
+
+order.forEach(id=>{
+
+let p=products.find(x=>x.id==id);
+
+html+=`<div class='cart-item'>${p.name} - ₹${p.price}</div>`;
+
+});
+
+});
+
+document.getElementById("main").innerHTML=html;
+
+}
+
+showHome();
 
 </script>
 
